@@ -16,8 +16,6 @@ public class DownLoadController {
     private String downloadDefaultFile;
     @Value("${download.path:E:/workspace/download/}")
     private String downloadPath;
-    @Value("${download.url:http://(ip):(port)}")
-    private String downloadUrl;
 
     @GetMapping("/dl")
     public void download(String f, HttpServletResponse response) throws IOException {
@@ -62,8 +60,6 @@ public class DownLoadController {
             System.out.println(downloadPath + " 目录不存在，只能下载此目录下面的文件，请确保配置路径（download.path={path}）存在");
             return "目录不存在!";
         }
-        String ip = request.getServerName();
-        int port = request.getServerPort();
         List<String> fns = new ArrayList<>();
         String path = baseFile.getAbsolutePath();
         if (d != null && !d.isEmpty()) {
@@ -78,17 +74,17 @@ public class DownLoadController {
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isDirectory()) {
-                    fns.add("<span>目录：<a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/ll?d=" + getQueryParameter(files[i], baseFile) + "\" >" + files[i].getName() + "</a></span>");
+                    fns.add("<span>目录：<a href=\"/ll?d=" + getQueryParameter(files[i], baseFile) + "\" >" + files[i].getName() + "</a></span>");
                     continue;
                 }
-                fns.add("<span>文件：<a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/dl?f=" + getQueryParameter(files[i], baseFile) + "\" >" + files[i].getName() + "</a></span>");
+                fns.add("<span>文件：<a href=\"/dl?f=" + getQueryParameter(files[i], baseFile) + "\" >" + files[i].getName() + "</a></span>");
             }
         } else {
             return "目录不存在!";
         }
         fns.sort((x, y) -> y.compareTo(x));
         if (!file.getCanonicalPath().equals(baseFile.getAbsolutePath())) {
-            fns.add(0, "<span>目录：<a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></span>");
+            fns.add(0, "<span>目录：<a href=\"/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></span>");
         }
         return String.join("<br>", fns);
     }

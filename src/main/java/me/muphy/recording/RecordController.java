@@ -18,24 +18,17 @@ public class RecordController {
     @Autowired
     private RecordService recordService;
 
-    @Value("${download.url:http://(ip):(port)}")
-    private String downloadUrl;
-
     @GetMapping("/start")
     public String startRecord(int t, HttpServletRequest request) {
         String msg = recordService.start(t);
-        String ip = request.getServerName();
-        int port = request.getServerPort();
-        return "<span>" + msg + "</span><br><span><a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/record/stop\" >点击停止录音</a>" +
-                "</span><span style=\"margin-left: 20px;\"><a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/ll?d=/record\" >点击查看所有录音文件</a></span>";
+        return "<span>" + msg + "</span><br><span><a href=\"/record/stop\" >点击停止录音</a>" +
+                "</span><span style=\"margin-left: 20px;\"><a href=\"/ll?d=/record\" >点击查看所有录音文件</a></span>";
     }
 
     @GetMapping("/stop")
     public String stopRecord(HttpServletRequest request) {
         String msg = recordService.stop();
-        String ip = request.getServerName();
-        int port = request.getServerPort();
-        return "<span>" + msg + "</span><br><span><a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/ll?d=/record\" >点击查看所有录音文件</a></span>";
+        return "<span>" + msg + "</span><br><span><a href=\"/ll?d=/record\" >点击查看所有录音文件</a></span>";
     }
 
 }
