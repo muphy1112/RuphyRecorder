@@ -86,7 +86,7 @@ public class DownLoadController {
         }
         fns.sort((x,y)->y.compareTo(x));
         if(!file.getCanonicalPath().equals(baseFile.getAbsolutePath())){
-            fns.add(0, "<span>目录：<a href=\"" + downloadUrl.replace("(ip)", ip) + "/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></span>");
+            fns.add(0, "<span>目录：<a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></span>");
         }
         return String.join("<br>", fns);
     }
