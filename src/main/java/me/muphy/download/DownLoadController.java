@@ -28,7 +28,7 @@ public class DownLoadController {
             fileName = f;
         }
         File file = new File(downloadPath + fileName);
-        if(!file.isFile() || !file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())){
+        if (!file.isFile() || !file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
             error(response);
             return;
         }
@@ -66,13 +66,15 @@ public class DownLoadController {
         int port = request.getServerPort();
         List<String> fns = new ArrayList<>();
         String path = baseFile.getAbsolutePath();
-        if(d != null && !d.isEmpty()){
+        if (d != null && !d.isEmpty()) {
             path += d;
         }
 
         File file = new File(path.replaceAll("/+", "/"));
         if (file.isDirectory()) {
-            file = file.getCanonicalFile();
+            if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
+                return "目录不存在!";
+            }
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isDirectory()) {
@@ -84,17 +86,17 @@ public class DownLoadController {
         } else {
             return "目录不存在!";
         }
-        fns.sort((x,y)->y.compareTo(x));
-        if(!file.getCanonicalPath().equals(baseFile.getAbsolutePath())){
+        fns.sort((x, y) -> y.compareTo(x));
+        if (!file.getCanonicalPath().equals(baseFile.getAbsolutePath())) {
             fns.add(0, "<span>目录：<a href=\"" + downloadUrl.replace("(ip)", ip).replace("(port)", port + "") + "/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></span>");
         }
         return String.join("<br>", fns);
     }
 
     private String getQueryParameter(File file, File baseFile) throws IOException {
-         return file.getCanonicalPath()
-                 .replaceAll("\\\\", "/")
-                 .replaceAll(baseFile.getAbsolutePath().replaceAll("\\\\", "/"), "" );
+        return file.getCanonicalPath()
+                .replaceAll("\\\\", "/")
+                .replaceAll(baseFile.getAbsolutePath().replaceAll("\\\\", "/"), "");
     }
 
 }
