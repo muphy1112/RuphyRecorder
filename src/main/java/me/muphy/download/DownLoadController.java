@@ -18,6 +18,9 @@ public class DownLoadController {
     @Value("${download.path:E:/workspace/download/}")
     private String downloadPath;
 
+    private static String noPath = "<div><span>目录不存在！</span></div><div><span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div>";
+    private static String noFile = "<div><span>文件不存在！</span></div><div><span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div>";
+
     @GetMapping("/dl")
     public void download(String f, HttpServletResponse response) throws IOException {
         // 下载本地文件
@@ -49,7 +52,7 @@ public class DownLoadController {
         response.reset();
         response.setContentType("text/html;charset=utf-8");
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), "utf-8"));
-        writer.print("文件不存在!");
+        writer.print(noFile);
         writer.close();
         return;
     }
@@ -59,7 +62,7 @@ public class DownLoadController {
         File baseFile = new File(downloadPath);
         if (!baseFile.isDirectory()) {
             System.out.println(downloadPath + " 目录不存在，只能下载此目录下面的文件，请确保配置路径（download.path={path}）存在");
-            return "目录不存在!";
+            return noPath;
         }
         List<String> fns = new ArrayList<>();
         String path = baseFile.getAbsolutePath();
@@ -70,7 +73,7 @@ public class DownLoadController {
         File file = new File(path.replaceAll("/+", "/"));
         if (file.isDirectory()) {
             if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
-                return "目录不存在!";
+                return noPath;
             }
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; i++) {
@@ -87,12 +90,13 @@ public class DownLoadController {
                 }
             }
         } else {
-            return "目录不存在!";
+            return noPath;
         }
         fns.sort((x, y) -> y.compareTo(x));
         if (!file.getCanonicalPath().equals(baseFile.getAbsolutePath())) {
             fns.add(0, "<span>目录：<a href=\"/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></span>");
         }
+        fns.add("<div><span><a href=\"/\" >返回首页</a></span></div>");
         return String.join("", fns);
     }
 
