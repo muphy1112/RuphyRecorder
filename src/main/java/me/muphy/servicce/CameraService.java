@@ -27,7 +27,7 @@ public class CameraService {
             path.mkdirs();
         }
         String time = new SimpleDateFormat("yyyMMdd_HHmmss").format(new Date());
-        File file = new File(filePath + "/" + time);
+        File file = new File(filePath + "/" + time + ".jpg");
         webcam.setViewSize(WebcamResolution.VGA.getSize());
         WebcamUtils.capture(webcam, file);
         return "拍照成功！";
