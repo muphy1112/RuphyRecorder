@@ -173,16 +173,14 @@ public class RecordService {
             byte audioData[] = baos.toByteArray();
             bais = new ByteArrayInputStream(audioData);
             ais = new AudioInputStream(bais, af, audioData.length / af.getFrameSize());
-            //定义最终保存的文件名
-            File file = null;
             //以当前的时间命名录音的名字
-            String filePath = downloadPath + "/record";
+            String filePath = downloadPath + "/record/" + new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             File path = new File(filePath);
             if (!path.exists()) {//如果文件不存在，则创建该目录
                 path.mkdirs();
             }
-            String time = new SimpleDateFormat("yyyMMddHHmmss").format(new Date());
-            file = new File(filePath + "/" + time + ".wav");
+            String time = new SimpleDateFormat("yyyMMdd_HHmmss").format(new Date());
+            File file = new File(filePath + "/" + time + ".wav");
             AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
         }
 

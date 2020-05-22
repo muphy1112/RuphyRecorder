@@ -21,14 +21,18 @@ public class RecordController {
     @GetMapping("/start")
     public String startRecord(int t, HttpServletRequest request) {
         String msg = recordService.start(t);
-        return "<span>" + msg + "</span><br><span><a href=\"/record/stop\" >点击停止录音</a>" +
-                "</span><span style=\"margin-left: 20px;\"><a href=\"/ll?d=/record\" >点击查看所有录音文件</a></span>";
+        return "<div><span>" + msg + "</span></div><div>" +
+                "<span><a href=\"/record/stop\" >点击停止录音</a></span>" +
+                "<span style=\"margin-left: 20px;\"><a href=\"/ll?d=/record\" >点击查看所有录音文件</a></span>" +
+                "<span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div>";
     }
 
     @GetMapping("/stop")
     public String stopRecord(HttpServletRequest request) {
         String msg = recordService.stop();
-        return "<span>" + msg + "</span><br><span><a href=\"/ll?d=/record\" >点击查看所有录音文件</a></span>";
+        return "<div><span>" + msg + "</span></div><div>" +
+                "<span><a href=\"/ll?d=/record\" >点击查看所有录音文件</a></span>" +
+                "<span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div>";
     }
 
 }
