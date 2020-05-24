@@ -16,8 +16,12 @@ public class CameraService {
     @Value("${download.path:E:/workspace/download/}")
     private String downloadPath;
 
+    private static class W{
+        public static Webcam webcam = Webcam.getDefault();
+    }
+
     public String takePictures() {
-        Webcam webcam = Webcam.getDefault();
+            Webcam webcam = W.webcam;
         if (webcam == null) {
             return "没有找到摄像设备！";
         }
@@ -30,6 +34,7 @@ public class CameraService {
         File file = new File(filePath + "/" + time + ".jpg");
         webcam.setViewSize(WebcamResolution.VGA.getSize());
         WebcamUtils.capture(webcam, file);
+        webcam.close();
         return "拍照成功！";
     }
 }
