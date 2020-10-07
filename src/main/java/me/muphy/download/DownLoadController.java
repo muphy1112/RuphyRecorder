@@ -129,7 +129,7 @@ public class DownLoadController {
         sb.append("</tbody>");
         sb.append("</table></div>");
         sb.append("<div style=\"border-bottom: 1px solid #ccc; margin-bottom: 20px; padding: 10px 0;\"><span><a href=\"/\" >返回首页</a></span></div>");
-        sb.append("<div><iframe id=\"view-file\" src=\"http://www.baidu.com\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></div></body></iframe></div>");
+        sb.append("<div><iframe id=\"view-file\" src=\"http://47.106.139.21\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></div></body></iframe></div>");
         sb.append("</body");
         sb.append("</html");
         return sb.toString();
