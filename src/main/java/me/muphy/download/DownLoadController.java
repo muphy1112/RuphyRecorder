@@ -16,6 +16,8 @@ import java.util.List;
 public class DownLoadController {
 
     private static String downloadPath;
+    @Value("${download.passwd:123...}")
+    private String passwd;
 
     public String getDownloadPath() {
         return downloadPath;
@@ -66,7 +68,7 @@ public class DownLoadController {
         if (Strings.isEmpty(d)) {
             return "<script>alert('目录不能为空！');window.open(\"\\/\");</script>";
         }
-        if (!"123...".equals(p)) {
+        if (!passwd.equals(p)) {
             return "<script>alert('你没有设置目录权限！');window.open(\"\\/\");</script>";
         }
         File file = new File(d);
@@ -96,7 +98,7 @@ public class DownLoadController {
             path += d;
         }
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        File file = new File(path.replaceAll("/+", "/"));
+        File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
         List<String> fns = new ArrayList<>();
         if (file.isDirectory()) {
             if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
@@ -115,6 +117,7 @@ public class DownLoadController {
                             + files[i].length() / 1024 / 1024 + "MB</td><td>"
                             + simpleDateFormat.format(files[i].lastModified()) + "</td><td>"
                             + "<a href=\"/dl?f=" + getQueryParameter(files[i], baseFile) + "\" >下载</a>"
+                            + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入删除认证码：'); this.setAttribute('href', '/df?f=" + getQueryParameter(files[i], baseFile) + "&p=' + p);\" href=\"#\" >删除</a>"
                             + "<a href=\"#\" style=\"margin-left: 10px;\" onclick=\"document.getElementById('view-file').setAttribute('src', '/vf?f=" + getQueryParameter(files[i], baseFile) + "')\">查看</a></td></tr>");
                 }
             }
@@ -133,6 +136,24 @@ public class DownLoadController {
         sb.append("</body");
         sb.append("</html");
         return sb.toString();
+    }
+
+    @GetMapping("/df")
+    public String delFile(String p, String f) throws IOException {
+        if (Strings.isEmpty(f)) {
+            return "<script>alert('文件不能为空！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
+        }
+        if (!passwd.equals(p)) {
+            return "<script>alert('你没有删除文件权限！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
+        }
+        File baseFile = new File(downloadPath);
+        String path = baseFile.getAbsolutePath() + f;
+        File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
+        if (!file.isFile() || !file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
+            return "<script>alert('文件不存在！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>！";
+        }
+        file.delete();
+        return "<script>alert('删除成功！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
     }
 
     @GetMapping("/vf")
