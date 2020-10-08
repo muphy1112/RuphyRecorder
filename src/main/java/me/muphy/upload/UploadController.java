@@ -33,8 +33,8 @@ public class UploadController {
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
             int size = (int) file.getSize();
-            System.out.println(fileName + "-->" + size);
-            if(size > 4*1024*1024){
+            System.out.println("文件上传：" + fileName + "-->" + size);
+            if(size > 10*1024*1024){
                 return getPageMsg("上传失败，文件太大！");
             }
             if (file.isEmpty()) {
@@ -51,8 +51,6 @@ public class UploadController {
     }
 
     private String getPageMsg(String msg){
-        return "<div><span>" + msg + "</span></div><div>" +
-                "<span><a href=\"/ll?d=/upload/\" >查看所有已上传文件</a></span>" +
-                "<span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div>";
+        return "<script>alert('" + msg + "');location.href='/upload/index.html';</script>";
     }
 }

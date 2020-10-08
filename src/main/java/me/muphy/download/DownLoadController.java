@@ -1,13 +1,17 @@
 package me.muphy.download;
 
 import org.apache.logging.log4j.util.Strings;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +44,7 @@ public class DownLoadController {
             error(response);
             return;
         }
+        System.out.println("文件下载：" + file.getName() + "-->" + file.length());
         // 读到流中
         InputStream inStream = new FileInputStream(file);// 文件的存放路径
         // 设置输出的格式
@@ -63,7 +68,7 @@ public class DownLoadController {
         return;
     }
 
-    @GetMapping("/sd")
+    //@GetMapping("/sd")
     public String setDownloadPath(String p, String d) {
         if (Strings.isEmpty(d)) {
             return "<script>alert('目录不能为空！');window.open(\"\\/\");</script>";
@@ -90,7 +95,7 @@ public class DownLoadController {
         sb.append("<html>");
         sb.append("<head><style>tr th,td { padding-right: 10; }</style><title>若非文件浏览器</title></head>");
         sb.append("<body>");
-        sb.append("<div><table style=\"text-align: left;\">");
+        sb.append("<div style=\"max-height: 500px; overflow: auto;\"><table style=\"text-align: left;\">");
         sb.append("<thead><tr><th>类型</th><th>文件名</th><th>文件大小KB</th><th>文件大小MB</th><th>创建时间</th><th>操作</th></tr></thead>");
         sb.append("<tbody>");
         String path = baseFile.getAbsolutePath();
@@ -132,9 +137,9 @@ public class DownLoadController {
         sb.append("</tbody>");
         sb.append("</table></div>");
         sb.append("<div style=\"border-bottom: 1px solid #ccc; margin-bottom: 20px; padding: 10px 0;\"><span><a href=\"/\" >返回首页</a></span></div>");
-        sb.append("<div><iframe id=\"view-file\" src=\"http://www.muphy.me\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></div></body></iframe></div>");
-        sb.append("</body");
-        sb.append("</html");
+        sb.append("<div><iframe id=\"view-file\" src=\"https://www.cnblogs.com/muphy/\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></iframe></div>");
+        sb.append("</body>");
+        sb.append("</html>");
         return sb.toString();
     }
 
@@ -150,9 +155,12 @@ public class DownLoadController {
         String path = baseFile.getAbsolutePath() + f;
         File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
         if (!file.isFile() || !file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
-            return "<script>alert('文件不存在！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>！";
+            return "<script>alert('文件不存在！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
         }
-        file.delete();
+        System.out.println("文件删除：" + file.getName());
+        if(!file.delete()){
+            return "<script>alert('删除失败！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
+        }
         return "<script>alert('删除成功！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
     }
 
@@ -162,22 +170,60 @@ public class DownLoadController {
         File baseFile = new File(downloadPath);
         File file = new File(downloadPath + f);
         if (!file.isFile() || !file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
-            return "文件不存在！";
+            return "<h1>文件不存在！</h1>";
         }
         if (file.length() > 1024 * 1024 * 25) {
-            return "文件太大！";
+            return "<h1>文件太大！</h1>";
+        }
+        String fileType = getFileType(file);
+        if("video".equals(fileType)){
+            return "<div>当前视频文件：" + file.getName() + "</div><div><video src=\"/vs?f=" + f + "\" controls=\"controls\" width=\"800px\" autoplay=\"\">当前浏览器不支持video标签</video></div>";
+        }
+        if("image".equals(fileType)){
+            return "<div>当前图片文件：" + file.getName() + "</div><div><img src=\"/vs?f=" + f + "\" width=\"800px\" alt=\"预览失败\" /></div>";
+        }
+        if("audio".equals(fileType)){
+            return "<div>当前音频文件：" + file.getName() + "</div><div><audio src=\"/vs?f=" + f + "\" controls=\"controls\" width=\"800px\" autoplay=\"\">当前浏览器不支持audio标签</audio></div>";
         }
         FileReader reader = new FileReader(file);
         BufferedReader br = new BufferedReader(reader);
         StringBuilder sb = new StringBuilder();
+        sb.append("<xmp>\n");
         String line = null;
         while ((line = br.readLine()) != null){
             sb.append(line);
-            sb.append("<br>");
+            sb.append("\n");
         }
+        sb.append("</xmp>");
         br.close();
         reader.close();
         return sb.toString();
+    }
+
+    @GetMapping(value = "/vs")
+    public void viewStream(String f, HttpServletResponse response) {
+        try {
+            File baseFile = new File(downloadPath);
+            File file = new File(downloadPath + f);
+            if (!file.isFile() || !file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+            }
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            response.setHeader("Content-Disposition", "attachment; filename="+file.getName().replace(" ", "_"));
+            InputStream in = new FileInputStream(file);
+            IOUtils.copy(in, response.getOutputStream());
+            response.flushBuffer();
+        } catch (java.nio.file.NoSuchFileException e) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
+    private String getFileType(File file) throws IOException {
+        String contentType = Files.probeContentType(file.toPath());
+        System.out.println("查看文件："  + file.getName() + "-->" + file.length() + "-->" + contentType);
+        return contentType == null ? null : contentType.replaceAll("\\/+.*", "");
     }
 
     private String getQueryParameter(File file, File baseFile) throws IOException {
