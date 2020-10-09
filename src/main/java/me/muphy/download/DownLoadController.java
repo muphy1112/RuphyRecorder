@@ -91,6 +91,18 @@ public class DownLoadController {
             System.out.println(downloadPath + " 目录不存在，只能下载此目录下面的文件，请确保配置路径（download.path={path}）存在");
             return noPath;
         }
+        String path = baseFile.getAbsolutePath();
+        if (d != null && !d.isEmpty()) {
+            path += d;
+        }
+        File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
+        if (!file.isDirectory()){
+            return noPath;
+        }
+        if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
+            return noPath;
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append("<html>");
         sb.append("<head><style>tr th,td { padding-right: 10; }</style><title>若非文件浏览器</title></head>");
@@ -98,49 +110,77 @@ public class DownLoadController {
         sb.append("<div style=\"max-height: 500px; overflow: auto;\"><table style=\"text-align: left;\">");
         sb.append("<thead><tr><th>类型</th><th>文件名</th><th>文件大小KB</th><th>文件大小MB</th><th>创建时间</th><th>操作</th></tr></thead>");
         sb.append("<tbody>");
-        String path = baseFile.getAbsolutePath();
-        if (d != null && !d.isEmpty()) {
-            path += d;
-        }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
-        List<String> fns = new ArrayList<>();
-        if (file.isDirectory()) {
-            if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
-                return noPath;
-            }
-            File[] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    fns.add("<tr><td>目录：</td><td colspan=\"4\"><a href=\"/ll?d=" + getQueryParameter(files[i], baseFile) + "\" >" + files[i].getName() + "</a></td><td><a href=\"/ll?d=" + getQueryParameter(files[i], baseFile) + "\" >查看</a></td></tr>");
-                    continue;
-                }
-                if (files[i].canRead()) {
-                    fns.add("<tr><td>文件：</td><td><a href=\"/dl?f=" + getQueryParameter(files[i], baseFile) + "\" >"
-                            + files[i].getName() + "</a></td><td>"
-                            + files[i].length() / 1024 + "KB</td><td>"
-                            + files[i].length() / 1024 / 1024 + "MB</td><td>"
-                            + simpleDateFormat.format(files[i].lastModified()) + "</td><td>"
-                            + "<a href=\"/dl?f=" + getQueryParameter(files[i], baseFile) + "\" >下载</a>"
-                            + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入删除认证码：'); this.setAttribute('href', '/df?f=" + getQueryParameter(files[i], baseFile) + "&p=' + p);\" href=\"#\" >删除</a>"
-                            + "<a href=\"#\" style=\"margin-left: 10px;\" onclick=\"document.getElementById('view-file').setAttribute('src', '/vf?f=" + getQueryParameter(files[i], baseFile) + "')\">查看</a></td></tr>");
-                }
-            }
-        } else {
-            return noPath;
-        }
-        fns.sort((x, y) -> y.compareTo(x));
-        if (!file.getCanonicalPath().equals(baseFile.getAbsolutePath())) {
-            fns.add(0, "<tr><td>目录：</td><td colspan=\"4\"><a href=\"/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >..</a></td><td><a href=\"/ll?d=" + getQueryParameter(file, baseFile) + "/..\" >返回上级目录</a></td></tr>");
-        }
-        sb.append(String.join("", fns));
+        sb.append(String.join("", getTds(file, baseFile)));
         sb.append("</tbody>");
         sb.append("</table></div>");
-        sb.append("<div style=\"border-bottom: 1px solid #ccc; margin-bottom: 20px; padding: 10px 0;\"><span><a href=\"/\" >返回首页</a></span></div>");
-        sb.append("<div><iframe id=\"view-file\" src=\"https://www.cnblogs.com/muphy/\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></iframe></div>");
+        sb.append("<div style=\"border-bottom: 1px solid #ccc; margin-bottom: 20px; padding: 10px 0;\">" +
+                "<span style=\"margin-right: 20px;\">当前目录：" + getCurrentPath(file, baseFile) + "</span>" +
+                "<span><a href=\"/\" >返回首页</a></span></div>");
+        sb.append("<div><iframe id=\"view-file\" src=\"/ruphy.html\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></iframe></div>");
         sb.append("</body>");
         sb.append("</html>");
         return sb.toString();
+    }
+
+    private List<String> getTds(File file, File baseFile) throws IOException {
+        List<String> fns = new ArrayList<>();
+        File[] files = file.listFiles();
+
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
+                File tmpFile = files[i];
+                String fileName = tmpFile.getName();
+                while (tmpFile.listFiles().length == 1){
+                    tmpFile = tmpFile.listFiles()[0];
+                    fileName += "/" + tmpFile.getName();
+                    if(tmpFile.isFile()){
+                        fns.add(getFileRow(tmpFile, baseFile, fileName));
+                        break;
+                    }
+                }
+                if(tmpFile.isDirectory()){
+                    fns.add("<tr><td>目录：</td><td colspan=\"4\"><a href=\"/ll?d="
+                            + getQueryParameter(tmpFile, baseFile) + "\" >" + fileName + "</a></td><td><a href=\"/ll?d="
+                            + getQueryParameter(tmpFile, baseFile) + "\" >查看</a></td></tr>");
+                }
+                continue;
+            }
+            if (files[i].canRead()) {
+                fns.add(getFileRow(files[i], baseFile, files[i].getName()));
+            }
+        }
+        fns.sort((x, y) -> y.compareTo(x));
+        if (!file.getCanonicalPath().equals(baseFile.getAbsolutePath())) {
+            fns.add(0, "<tr><td>目录：</td><td colspan=\"4\"><a href=\"/ll?d="
+                    + getQueryParameter(file, baseFile).replaceAll("/+[^/]+/?$", "/")
+                    + "\" >..</a></td><td><a href=\"/ll?d="
+                    + getQueryParameter(file, baseFile).replaceAll("/+[^/]+/?$", "/")
+                    + "\" >返回上级目录</a></td></tr>");
+        }
+        return fns;
+    }
+
+    private String getFileRow(File file, File baseFile, String fileName) throws IOException {
+        String queryParameter = getQueryParameter(file, baseFile);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        return "<tr><td>文件：</td><td><a href=\"/dl?f=" + queryParameter + "\" >"
+                + fileName + "</a></td><td>"
+                + file.length() / 1024 + "KB</td><td>"
+                + file.length() / 1024 / 1024 + "MB</td><td>"
+                + format.format(file.lastModified()) + "</td><td>"
+                + "<a href=\"/dl?f=" + queryParameter + "\" >下载</a>"
+                + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入删除认证码：'); if(!p) return false; this.setAttribute('href', '/df?f=" + queryParameter + "&p=' + p);\" href=\"#\" >删除</a>"
+                + "<a href=\"#\" style=\"margin-left: 10px;\" onclick=\"document.getElementById('view-file').setAttribute('src', '/vf?f=" + queryParameter + "')\">查看</a></td></tr>";
+    }
+
+    private String getCurrentPath(File file, File baseFile) throws IOException {
+        File tmpFile = file;
+        String path = "";
+        while (!tmpFile.equals(baseFile)){
+            path =  "/<a href=\"/ll?d=" + getQueryParameter(tmpFile, baseFile) + "\" >" + tmpFile.getName() + "</a>" + path;
+            tmpFile = tmpFile.getParentFile();
+        }
+        return path;
     }
 
     @GetMapping("/df")
@@ -175,7 +215,9 @@ public class DownLoadController {
         if (file.length() > 1024 * 1024 * 25) {
             return "<h1>文件太大！</h1>";
         }
-        String fileType = getFileType(file);
+        String contentType = Files.probeContentType(file.toPath());
+        String fileType = contentType == null ? null : contentType.replaceAll("\\/+.*", "");
+        System.out.println("查看文件："  + file.getName() + "-->" + file.length() + "-->" + contentType);
         if("video".equals(fileType)){
             return "<div>当前视频文件：" + file.getName() + "</div><div><video src=\"/vs?f=" + f + "\" controls=\"controls\" width=\"800px\" autoplay=\"\">当前浏览器不支持video标签</video></div>";
         }
@@ -188,13 +230,15 @@ public class DownLoadController {
         FileReader reader = new FileReader(file);
         BufferedReader br = new BufferedReader(reader);
         StringBuilder sb = new StringBuilder();
-        sb.append("<xmp>\n");
         String line = null;
         while ((line = br.readLine()) != null){
             sb.append(line);
             sb.append("\n");
         }
-        sb.append("</xmp>");
+        if(!"text/html".equals(contentType)){
+            sb.insert(0, "<xmp>\n");
+            sb.append("</xmp>");
+        }
         br.close();
         reader.close();
         return sb.toString();
@@ -218,12 +262,6 @@ public class DownLoadController {
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-    }
-
-    private String getFileType(File file) throws IOException {
-        String contentType = Files.probeContentType(file.toPath());
-        System.out.println("查看文件："  + file.getName() + "-->" + file.length() + "-->" + contentType);
-        return contentType == null ? null : contentType.replaceAll("\\/+.*", "");
     }
 
     private String getQueryParameter(File file, File baseFile) throws IOException {
