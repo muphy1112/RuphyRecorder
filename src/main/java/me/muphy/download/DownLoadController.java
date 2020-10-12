@@ -1,6 +1,7 @@
 package me.muphy.download;
 
 import org.apache.logging.log4j.util.Strings;
+import org.apache.tomcat.util.buf.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -96,7 +99,7 @@ public class DownLoadController {
             path += d;
         }
         File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
-        if (!file.isDirectory()){
+        if (!file.isDirectory()) {
             return noPath;
         }
         if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
@@ -110,7 +113,7 @@ public class DownLoadController {
         sb.append("<div style=\"max-height: 500px; overflow: auto;\"><table style=\"text-align: left;\">");
         sb.append("<thead><tr><th>类型</th><th>文件名</th><th>文件大小KB</th><th>文件大小MB</th><th>创建时间</th><th>操作</th></tr></thead>");
         sb.append("<tbody>");
-        sb.append(String.join("", getTds(file, baseFile)));
+        sb.append(StringUtils.join(getTds(file, baseFile), ' '));
         sb.append("</tbody>");
         sb.append("</table></div>");
         sb.append("<div style=\"border-bottom: 1px solid #ccc; margin-bottom: 20px; padding: 10px 0;\">" +
@@ -130,18 +133,21 @@ public class DownLoadController {
             if (files[i].isDirectory()) {
                 File tmpFile = files[i];
                 String fileName = tmpFile.getName();
-                while (tmpFile.listFiles().length == 1){
+                while (tmpFile.listFiles().length == 1) {
                     tmpFile = tmpFile.listFiles()[0];
                     fileName += "/" + tmpFile.getName();
-                    if(tmpFile.isFile()){
+                    if (tmpFile.isFile()) {
                         fns.add(getFileRow(tmpFile, baseFile, fileName));
                         break;
                     }
                 }
-                if(tmpFile.isDirectory()){
+                if (tmpFile.isDirectory()) {
+                    String queryParameter = getQueryParameter(tmpFile, baseFile);
                     fns.add("<tr><td>目录：</td><td colspan=\"4\"><a href=\"/ll?d="
-                            + getQueryParameter(tmpFile, baseFile) + "\" >" + fileName + "</a></td><td><a href=\"/ll?d="
-                            + getQueryParameter(tmpFile, baseFile) + "\" >查看</a></td></tr>");
+                            + getQueryParameter(tmpFile, baseFile) + "\" >" + fileName + "</a></td><td>" +
+                            "<a href=\"/ll?d=" + getQueryParameter(tmpFile, baseFile) + "\" >查看</a>"
+                            + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入认证码：'); if(!p) return false; this.setAttribute('href', '/zip?d=" + queryParameter + "&p=' + p);\" href=\"#\">压缩</a>"
+                            + "</td></tr>");
                 }
                 continue;
             }
@@ -149,7 +155,12 @@ public class DownLoadController {
                 fns.add(getFileRow(files[i], baseFile, files[i].getName()));
             }
         }
-        fns.sort((x, y) -> y.compareTo(x));
+        Collections.sort(fns, new Comparator<String>() {
+            @Override
+            public int compare(String x, String y) {
+                return y.compareTo(x);
+            }
+        });
         if (!file.getCanonicalPath().equals(baseFile.getAbsolutePath())) {
             fns.add(0, "<tr><td>目录：</td><td colspan=\"4\"><a href=\"/ll?d="
                     + getQueryParameter(file, baseFile).replaceAll("/+[^/]+/?$", "/")
@@ -169,15 +180,16 @@ public class DownLoadController {
                 + file.length() / 1024 / 1024 + "MB</td><td>"
                 + format.format(file.lastModified()) + "</td><td>"
                 + "<a href=\"/dl?f=" + queryParameter + "\" >下载</a>"
-                + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入删除认证码：'); if(!p) return false; this.setAttribute('href', '/df?f=" + queryParameter + "&p=' + p);\" href=\"#\" >删除</a>"
+                + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入认证码：'); if(!p) return false; this.setAttribute('href', '/unzip?f=" + queryParameter + "&p=' + p);\" href=\"#\">解压</a>"
+                + "<a style=\"margin-left: 10px;\" onclick=\"var p = prompt('输入认证码：'); if(!p) return false; this.setAttribute('href', '/df?f=" + queryParameter + "&p=' + p);\" href=\"#\" >删除</a>"
                 + "<a href=\"#\" style=\"margin-left: 10px;\" onclick=\"document.getElementById('view-file').setAttribute('src', '/vf?f=" + queryParameter + "')\">查看</a></td></tr>";
     }
 
     private String getCurrentPath(File file, File baseFile) throws IOException {
         File tmpFile = file;
         String path = "";
-        while (!tmpFile.equals(baseFile)){
-            path =  "/<a href=\"/ll?d=" + getQueryParameter(tmpFile, baseFile) + "\" >" + tmpFile.getName() + "</a>" + path;
+        while (!tmpFile.equals(baseFile)) {
+            path = "/<a href=\"/ll?d=" + getQueryParameter(tmpFile, baseFile) + "\" >" + tmpFile.getName() + "</a>" + path;
             tmpFile = tmpFile.getParentFile();
         }
         return path;
@@ -198,7 +210,7 @@ public class DownLoadController {
             return "<script>alert('文件不存在！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
         }
         System.out.println("文件删除：" + file.getName());
-        if(!file.delete()){
+        if (!file.delete()) {
             return "<script>alert('删除失败！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
         }
         return "<script>alert('删除成功！');location.href=location.href.replace('/df?f', '/ll?d').replace(/\\/[^\\/]+$/, '')</script>";
@@ -217,25 +229,25 @@ public class DownLoadController {
         }
         String contentType = Files.probeContentType(file.toPath());
         String fileType = contentType == null ? null : contentType.replaceAll("\\/+.*", "");
-        System.out.println("查看文件："  + file.getName() + "-->" + file.length() + "-->" + contentType);
-        if("video".equals(fileType)){
+        System.out.println("查看文件：" + file.getName() + "-->" + file.length() + "-->" + contentType);
+        if ("video".equals(fileType)) {
             return "<div>当前视频文件：" + file.getName() + "</div><div><video src=\"/vs?f=" + f + "\" controls=\"controls\" width=\"800px\" autoplay=\"\">当前浏览器不支持video标签</video></div>";
         }
-        if("image".equals(fileType)){
+        if ("image".equals(fileType)) {
             return "<div>当前图片文件：" + file.getName() + "</div><div><img src=\"/vs?f=" + f + "\" width=\"800px\" alt=\"预览失败\" /></div>";
         }
-        if("audio".equals(fileType)){
+        if ("audio".equals(fileType)) {
             return "<div>当前音频文件：" + file.getName() + "</div><div><audio src=\"/vs?f=" + f + "\" controls=\"controls\" width=\"800px\" autoplay=\"\">当前浏览器不支持audio标签</audio></div>";
         }
         FileReader reader = new FileReader(file);
         BufferedReader br = new BufferedReader(reader);
         StringBuilder sb = new StringBuilder();
         String line = null;
-        while ((line = br.readLine()) != null){
+        while ((line = br.readLine()) != null) {
             sb.append(line);
             sb.append("\n");
         }
-        if(!"text/html".equals(contentType)){
+        if (!"text/html".equals(contentType)) {
             sb.insert(0, "<xmp>\n");
             sb.append("</xmp>");
         }
@@ -253,7 +265,7 @@ public class DownLoadController {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
             }
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            response.setHeader("Content-Disposition", "attachment; filename="+file.getName().replace(" ", "_"));
+            response.setHeader("Content-Disposition", "attachment; filename=" + file.getName().replace(" ", "_"));
             InputStream in = new FileInputStream(file);
             IOUtils.copy(in, response.getOutputStream());
             response.flushBuffer();
