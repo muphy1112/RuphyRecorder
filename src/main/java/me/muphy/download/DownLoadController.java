@@ -110,7 +110,7 @@ public class DownLoadController {
         sb.append("<html>");
         sb.append("<head><style>tr th,td { padding-right: 10; }</style><title>若非文件浏览器</title></head>");
         sb.append("<body>");
-        sb.append("<div style=\"max-height: 500px; overflow: auto;\"><table style=\"text-align: left;\">");
+        sb.append("<div style=\"max-height: 450px; overflow: auto;\"><table style=\"text-align: left;\">");
         sb.append("<thead><tr><th>类型</th><th>文件名</th><th>文件大小KB</th><th>文件大小MB</th><th>创建时间</th><th>操作</th></tr></thead>");
         sb.append("<tbody>");
         sb.append(StringUtils.join(getTds(file, baseFile), ' '));
@@ -120,6 +120,8 @@ public class DownLoadController {
                 "<span style=\"margin-right: 20px;\">当前目录：" + getCurrentPath(file, baseFile) + "</span>" +
                 "<span><a href=\"/\" >返回首页</a></span></div>");
         sb.append("<div><iframe id=\"view-file\" src=\"/ruphy.html\" frameborder=\"0\" style=\"width: 100%; height: 100%\"></iframe></div>");
+        sb.append("<div style='text-align: center; color: blue'>@copyright by ruphy.</div>");
+        sb.append("<div style='text-align: center;'>QQ:1304023381</div>");
         sb.append("</body>");
         sb.append("</html>");
         return sb.toString();
