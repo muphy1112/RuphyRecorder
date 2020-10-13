@@ -56,6 +56,11 @@ public class ZipService {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             for (File fileSec : files) {
+                try {
+                    recursionZip(zipOut, fileSec, baseDir + file.getName() + File.separator);
+                } catch (Exception  e){
+                    throw e;
+                }
                 recursionZip(zipOut, fileSec, baseDir + file.getName() + File.separator);
             }
         } else {
@@ -78,6 +83,7 @@ public class ZipService {
      * @return
      */
     public boolean unZip(String zippath) {
+        System.out.println("done.");
         return unZip(zippath, new File(zippath).getParent());
     }
 
