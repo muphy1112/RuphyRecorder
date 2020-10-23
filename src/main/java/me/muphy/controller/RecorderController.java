@@ -1,4 +1,4 @@
-package me.muphy.recording;
+package me.muphy.controller;
 
 import me.muphy.servicce.RecordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import java.io.*;
 
 @RestController
 @RequestMapping("/record")
-public class RecordController {
+public class RecorderController {
 
     @Autowired
     private RecordService recordService;

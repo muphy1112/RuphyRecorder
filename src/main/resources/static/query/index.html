@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>查询</title>
+    <script src="../common.js"></script>
+</head>
+<body>
+<div style="height: 500px; margin-left: 20px">
+        <div>
+            <label>输入页码:</label><input type="number" id="page" max="7200" min="0" style="margin-left: 5px;" value="1"/>
+            <label>输入条数:</label><input type="number" id="size" max="7200" min="0" style="margin-left: 5px;" value="100"/>
+            <label>输入IP:</label><input type="text" id="keyword" maxlength="15" style="margin-left: 5px;"/>
+            <button onclick="query()">查询</button></div>
+    <div><span><a href="/ll?d=/record"></a></span><span style="margin-left: 20px;"><a href="/">返回首页</a></span></div>
+</div>
+<div id="content"></div>
+<div style='text-align: center; color: blue'>@copyright by ruphy.</div>
+<script type="text/javascript">
+    function query(){
+        let page = document.getElementById('page').value();
+        let size = document.getElementById('size').value();
+        let keyword = document.getElementById('keyword').value();
+        let content = document.getElementById('content');
+    }
+</script>
+</body>
+</html>

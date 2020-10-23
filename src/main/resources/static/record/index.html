@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>莫非录音机</title>
+    <title>录音机</title>
 </head>
 <body>
-<div>
+<div style="height: 500px; margin-left: 20px">
     <form action="/record/start" method="get">
         <div><span>请输入需要录音的时间(s):</span><input type="number" name="t" id="t" max="7200" min="0" style="margin-left: 5px;"><button type="submit" style="margin-left: 20px">开始录音</button></div>
     </form>
     <div><span><a href="/ll?d=/record">查看所有录音文件</a></span><span style="margin-left: 20px;"><a href="/">返回首页</a></span></div>
 </div>
+<div style='text-align: center; color: blue'>@copyright by ruphy.</div>
 </body>
 </html>

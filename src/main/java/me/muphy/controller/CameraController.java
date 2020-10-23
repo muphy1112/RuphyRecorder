@@ -1,4 +1,4 @@
-package me.muphy.camera;
+package me.muphy.controller;
 
 import me.muphy.servicce.CameraService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,9 @@ public class CameraController {
     @GetMapping("/tp")
     public String takePictures(String[] args) {
         String msg = cameraService.takePictures();
-        return "<div><span>" + msg + "</span></div><div>" +
+        return "<div style=\"height: 500px; margin-left: 20px\"><div><h1>" + msg + "</h1></div><div>" +
                 "<span><a href=\"/ll?d=/picture\" >点击查看所有照片</a></span>" +
-                "<span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div>";
+                "<span style=\"margin-left: 20px;\"><a href=\"/\" >返回首页</a></span></div></div>" +
+                "<div style='text-align: center; color: blue'>@copyright by ruphy.</div>";
     }
 }
