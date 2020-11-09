@@ -12,7 +12,7 @@ import java.util.List;
 @Pageable
 public interface MemorandumMapper {
 
-    @Insert("insert into memorandum(id, subject, content, create_time) values( #{id}, #{subject}, #{content}, #{createTime})")
+    @Insert("insert into memorandum(subject, content) values( #{subject}, #{content}")
     int saveMemorandum(MemorandumEntity entity);
 
     @Select("select id, subject, content, create_time as createTable from memorandum where subject like '%${subject}%' limit #{skip}, #{size}")

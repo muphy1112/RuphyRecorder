@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>摄像头</title>
+    <script src="../js/common.js"></script>
+</head>
+<body>
+<div style="height: 500px; margin-left: 20px">
+    <div>
+        <button style="margin-right: 20px" onclick="takePhoto()">拍照</button>
+        <span><a href="/file/ll?d=/picture">点击查看所有照片</a></span>
+        <span style="margin-left: 20px;"><a href="/">返回首页</a></span>
+    </div>
+    <div>
+        <span id="msg"></span>
+    </div>
+</div>
+<iframe src="/ruphy.html" frameborder="0" style="width: 100%;"></iframe>
+<script>
+    function takePhoto() {
+        _.post('/camera/takePicture', function (data) {
+            alert(data.message);
+            document.getElementById('msg').innerText = data.message;
+        })
+    }
+</script>
+</body>
+</html>

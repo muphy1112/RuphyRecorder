@@ -3,26 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <title>查询</title>
-    <script src="../common.js"></script>
+    <script src="../js/common.js"></script>
+    <style>
+        li {
+            display: inline-block;
+            /*background-color: antiquewhite;*/
+            margin-right: 20px;
+        }
+    </style>
 </head>
 <body>
-<div style="height: 500px; margin-left: 20px">
-        <div>
-            <label>输入页码:</label><input type="number" id="page" max="7200" min="0" style="margin-left: 5px;" value="1"/>
-            <label>输入条数:</label><input type="number" id="size" max="7200" min="0" style="margin-left: 5px;" value="100"/>
-            <label>输入IP:</label><input type="text" id="keyword" maxlength="15" style="margin-left: 5px;"/>
-            <button onclick="query()">查询</button></div>
-    <div><span><a href="/ll?d=/record"></a></span><span style="margin-left: 20px;"><a href="/">返回首页</a></span></div>
+<div style="margin-left: 20px">
+    <div>
+        <ul style="padding-left: 0">
+            <li><input type="radio" name="type" value="/memorandum/query" checked>查询重要信息</li>
+            <li><input type="radio" name="type" value="/payload/queryLocalRequestInfo">查询本地访问记录</li>
+            <li><input type="radio" name="type" value="/payload/queryRemoteRequestInfo">查询客户机访问记录</li>
+        </ul>
+    </div>
+    <div>
+        <label>输入页码:</label><input type="number" id="page" max="7200" min="0" style="margin-left: 5px;" value="1"/>
+        <label>输入条数:</label><input type="number" id="size" max="7200" min="0" style="margin-left: 5px;"
+                                   value="100"/>
+        <label>关键字:</label><input type="text" id="keyword" maxlength="15" style="margin-left: 5px;"/>
+        <button id="query-btn" onclick="query()">查询</button>
+    </div>
+    <div><span><a href="/download/index.html?d=/record"></a></span><span style="margin-left: 20px;"><a href="/">返回首页</a></span>
+    </div>
 </div>
 <div id="content"></div>
-<div style='text-align: center; color: blue'>@copyright by ruphy.</div>
+<iframe src="/ruphy.html" frameborder="0" style="width: 100%;"></iframe>
+
 <script type="text/javascript">
-    function query(){
-        let page = document.getElementById('page').value();
-        let size = document.getElementById('size').value();
-        let keyword = document.getElementById('keyword').value();
-        let content = document.getElementById('content');
+    function query() {
+        let url = "/memorandum/query";
+        let types = document.getElementsByName('type');
+        for (let i = 0; i < types.length; i++) {
+            if (types[i].checked) {
+                url = types[i].value;
+            }
+        }
+        let page = document.getElementById('page').value;
+        let size = document.getElementById('size').value;
+        let keyword = document.getElementById('keyword').value;
+        _.post(url, {page: page, size: size, s: keyword}, function (data) {
+            let content = document.getElementById('content');
+            _.util.table.create(content, data);
+        })
     }
+
+
 </script>
 </body>
 </html>

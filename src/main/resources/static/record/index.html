@@ -3,14 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>录音机</title>
+    <script src="../js/common.js"></script>
 </head>
 <body>
 <div style="height: 500px; margin-left: 20px">
-    <form action="/record/start" method="get">
-        <div><span>请输入需要录音的时间(s):</span><input type="number" name="t" id="t" max="7200" min="0" style="margin-left: 5px;"><button type="submit" style="margin-left: 20px">开始录音</button></div>
-    </form>
-    <div><span><a href="/ll?d=/record">查看所有录音文件</a></span><span style="margin-left: 20px;"><a href="/">返回首页</a></span></div>
+    <div style="display: block" id="start">
+        <span>请输入需要录音的时间(s):</span>
+        <input type="number" name="time" id="time" max="7200" min="0" style="margin-left: 5px;">
+        <button style="margin-left: 20px" onclick="start()">开始录音</button>
+    </div>
+    <div style="display: none" id="stop">
+        <button style="margin-left: 20px" onclick="stop()">停止录音</button>
+    </div>
+    <div>
+        <span><a href="/download/index.html?d=/record">查看所有录音文件</a></span>
+        <span style="margin-left: 20px;"><a href="/">返回首页</a></span>
+    </div>
+    <div>
+        <span id="msg"></span>
+    </div>
 </div>
-<div style='text-align: center; color: blue'>@copyright by ruphy.</div>
+<iframe src="/ruphy.html" frameborder="0" style="width: 100%;"></iframe>
+
+<script>
+    function start() {
+        let time = document.getElementById("time").value;
+        _.post("/record/start", {time: time}, function (data) {
+            alert(data.message);
+            document.getElementById('msg').innerText = data.message;
+            if (data.success) {
+                document.getElementById('start').style.display = "none";
+                document.getElementById('stop').style.display = "block";
+            }
+        });
+    }
+
+    function stop() {
+        _.post("/record/stop", function (data) {
+            alert(data.message);
+            document.getElementById('msg').innerText = data.message;
+            if (data.success) {
+                document.getElementById('start').style.display = "block";
+                document.getElementById('stop').style.display = "none";
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

@@ -1,7 +1,8 @@
 package me.muphy.util;
 
-public enum BeautifulStringUtil {
+public enum BeautifulStringUtils {
 
+    BACK,
     ERROR,
     SUCCESS,
     INFO;
@@ -10,7 +11,10 @@ public enum BeautifulStringUtil {
         return message(msg, SUCCESS);
     }
 
-    public static String message(String msg, BeautifulStringUtil status){
+    public static String message(String msg, BeautifulStringUtils status){
+        if(BACK.equals(status)){
+            return "<script>alert('" + msg + "');history.back();</script>";
+        }
         String color = "#dce";
         if(ERROR.equals(status)){
             color = "red";

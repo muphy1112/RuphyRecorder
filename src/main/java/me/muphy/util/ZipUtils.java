@@ -1,26 +1,18 @@
-package me.muphy.servicce;
-
-import org.springframework.stereotype.Service;
+package me.muphy.util;
 
 import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-@Service
-public class ZipService {
-
-    public static void main(String[] args) {
-        new ZipService().zip("D:/temp");
-    }
-
+public class ZipUtils {
     /**
      * 压缩
      *
      * @param filepath
      * @return
      */
-    public boolean zip(String filepath) {
+    public static boolean zip(String filepath) {
         return zip(filepath, new File(filepath).getAbsolutePath() + ".zip");
     }
 
@@ -31,7 +23,7 @@ public class ZipService {
      * @param zipPath
      * @return
      */
-    public boolean zip(String filepath, String zipPath) {
+    public static boolean zip(String filepath, String zipPath) {
         try {
             File file = new File(filepath);// 要被压缩的文件夹
             File zipFile = new File(zipPath);
@@ -52,13 +44,13 @@ public class ZipService {
         return true;
     }
 
-    private void recursionZip(ZipOutputStream zipOut, File file, String baseDir) throws Exception {
+    private static void recursionZip(ZipOutputStream zipOut, File file, String baseDir) throws Exception {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             for (File fileSec : files) {
                 try {
                     recursionZip(zipOut, fileSec, baseDir + file.getName() + File.separator);
-                } catch (Exception  e){
+                } catch (Exception e) {
                     throw e;
                 }
                 recursionZip(zipOut, fileSec, baseDir + file.getName() + File.separator);
@@ -82,7 +74,7 @@ public class ZipService {
      * @param zippath
      * @return
      */
-    public boolean unZip(String zippath) {
+    public static boolean unZip(String zippath) {
         System.out.println("done.");
         return unZip(zippath, new File(zippath).getParent());
     }
@@ -94,7 +86,7 @@ public class ZipService {
      * @param outPath
      * @return
      */
-    public boolean unZip(String zippath, String outPath) {
+    public static boolean unZip(String zippath, String outPath) {
         try {
             ZipInputStream Zin = new ZipInputStream(new FileInputStream(zippath));//输入源zip路径
             BufferedInputStream Bin = new BufferedInputStream(Zin);

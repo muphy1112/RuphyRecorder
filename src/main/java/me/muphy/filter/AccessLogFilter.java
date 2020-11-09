@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @Component
 @WebFilter(value = "requestFilter", urlPatterns = "/*")
-public class RequestFilter implements Filter {
+public class AccessLogFilter implements Filter {
 
     @Autowired
     private RemoteHostMapper remoteHostMapper;

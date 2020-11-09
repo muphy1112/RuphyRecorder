@@ -16,11 +16,6 @@ import java.util.Map;
 public class SecurityFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-
-    }
-
-    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -30,13 +25,8 @@ public class SecurityFilter implements Filter {
         }
     }
 
-    @Override
-    public void destroy() {
-
-    }
-
     /**
-     * 此六行正则表达式 史上最强防御xss攻击、sql注入等，却较少影响用户使用特殊字符和关键字
+     * 此几行正则表达式 史上最强防御xss攻击、sql注入、目录遍历等，却较少影响用户使用特殊字符和关键字
      */
     public class SecurityHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
@@ -44,18 +34,25 @@ public class SecurityFilter implements Filter {
 
         public SecurityHttpServletRequestWrapper(HttpServletRequest request) {
             super(request);
-            regRep.put("'([^']+)'", "‘$1’");
-            regRep.put("`([^`]+)`", "~$1~");
+            regRep.put("'([^']*)'", "‘$1’");
+            regRep.put("`([^`]*)`", "~$1~");
+            regRep.put("(\\.\\.[\\\\/]+)+", "");
             regRep.put("'(.*--+)", "‘$1");
-            regRep.put("\\\"([^\\\"]+)\\\"", "“$1”");
-            regRep.put("\\(([^\\)]+)\\)", "（$1）");
+            regRep.put("\\\"([^\\\"]*)\\\"", "“$1”");
+            regRep.put("\\(([^\\)]*)\\)", "（$1）");
             regRep.put("<([^>]+)>", "&lt;$1&gt;");
         }
 
+        // 上次直接替换还是会被绕过  这里更新使用while循环替换
         private String replace(String val) {
             if (val != null) {
                 for (String key : regRep.keySet()) {
+                    String nval = val;
                     val = val.replaceAll(key, regRep.get(key));
+                    while (!val.equals(nval)) {
+                        nval = val;
+                        val = val.replaceAll(key, regRep.get(key));
+                    }
                 }
             }
             return val;

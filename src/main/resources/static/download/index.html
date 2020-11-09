@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>下载</title>
+    <script src="../js/common.js"></script>
+</head>
+<body>
+
+<div style="font-size: 18px">
+    <span>当前目录：</span><span id="current"></span>
+    <span>
+        <a style="margin-left: 20px" href="#" onclick="listFiles()">返回根目录</a>
+        <a style="margin-left: 20px" href="#" id="pre-dir">返回上级目录</a>
+        <a style="margin-left: 20px" href="/">返回首页</a>
+    </span>
+</div>
+<div style="overflow: auto;" id="table"></div>
+
+<div><span id="filename"></span></div>
+<div id="content" style="overflow:auto;min-height: 100px; background-color: #f0f8ff">
+
+</div>
+<iframe src="/ruphy.html" frameborder="0" style="width: 100%;"></iframe>
+
+
+<script>
+    (function (_) {
+        let url = '/file/lf';
+        let d = _.getQueryString();
+        if (d) {
+            url += '?' + d;
+        }
+        listFiles(url);
+    })(_);
+
+    function listFiles(url) {
+        url = url || '/file/lf';
+        _.get(url, function (data) {
+            let table = document.getElementById('table');
+            let head = {
+                type: '类型',
+                fileName: '文件名',
+                ksize: '文件大小KB',
+                msize: '文件大小MB',
+                lastModified: '最后修改时间',
+                operate: '操作'
+            };
+            _.util.table.create(table, data, head);
+            let freeHeight = screen.availHeight - top.document.body.clientHeight;
+            let content = document.getElementById('content');
+            content.style.height = (content.clientHeight + freeHeight - 120) + 'px';
+        });
+        let current = document.getElementById('current');
+        current.innerHTML = '';
+        let d = _.getQueryParameter(url, 'd').replace(/\/+$/, '');
+        document.getElementById('pre-dir').onclick = function (e) {
+            let u = '/file/lf?d=' + d.replace(/(\/)[^\/]+\/?$/, '$1');
+            listFiles(u);
+        }
+        let href = '/file/lf?d=';
+        for (let v of d.split('/')) {
+            let a = document.createElement('a');
+            a.href = '#';
+            (function (u) {
+                a.onclick = function () {
+                    listFiles(u);
+                };
+            })(href = href + v + '/');
+            a.innerText = v + '/';
+            current.appendChild(a);
+        }
+    }
+
+    function showMessage(url, usePwd) {
+        if (usePwd) {
+            let p = prompt('输入认证码：');
+            if (!p) {
+                return false;
+            }
+            url += '&p=' + p;
+        }
+        _.get(url, function (data) {
+            let element = document.getElementById('content');
+            element.innerHTML = data;
+        });
+        document.getElementById('filename').innerText = '当前文件:' + _.getQueryParameter(url, 'f');
+    }
+
+</script>
+
+</body>
+</html>

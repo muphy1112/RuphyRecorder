@@ -1,6 +1,11 @@
 package me.muphy.servicce;
 
-import org.springframework.beans.factory.annotation.Value;
+import me.muphy.config.ApplicationConfig;
+import me.muphy.entity.ResultEntity;
+import me.muphy.util.JsonMessageUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.*;
@@ -13,27 +18,26 @@ import java.util.TimerTask;
 @Service
 public class RecordService {
 
-    @Value("${download.path:E:/workspace/download/}")
-    private String downloadPath;
-
-    @Value("${record.time.default:3600}")
-    private int defaultRecordTime;
+    @Autowired
+    private ApplicationConfig config;
+    private final Logger logger = LoggerFactory.getLogger(RecordService.class);
 
     //定义停止录音的标志，来控制录音线程的运行
     private static volatile boolean stopFlag = true;
 
-    public String start() {
-        return start(defaultRecordTime);
+    public ResultEntity start() {
+        return start(config.getDefaultTime());
     }
 
-    public String start(int time) {
-        synchronized (RecordService.class){
-            if(!stopFlag){
-                return "已有录音程序正在运行，启动录音失败!";
+    public ResultEntity start(int time) {
+        logger.info("启动录音！");
+        synchronized (RecordService.class) {
+            if (!stopFlag) {
+                return JsonMessageUtils.error("已有录音程序正在运行，启动录音失败!");
             }
         }
         new Thread(new Record()).start();
-        time = ((time > 7200 || time == 0) ? defaultRecordTime : time);
+        time = ((time > 7200 || time == 0) ? config.getDefaultTime() : time);
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -41,16 +45,17 @@ public class RecordService {
                 stop();
             }
         }, 1000 * time);
-        return "启动录音成功,开始录音," + time + "秒之后自动停止！";
+        return JsonMessageUtils.success("启动录音成功,开始录音," + time + "秒之后自动停止！");
     }
 
     //停止录音
-    public String stop() {
-        if(stopFlag){
-            return "没有运行的录音程序!";
+    public ResultEntity stop() {
+        logger.info("停止录音！");
+        if (stopFlag) {
+            return JsonMessageUtils.error("没有运行的录音程序!");
         }
         stopFlag = true;
-        return "停止成功!";
+        return JsonMessageUtils.success("停止成功!");
     }
 
     //文件拷贝方法
@@ -174,7 +179,7 @@ public class RecordService {
             bais = new ByteArrayInputStream(audioData);
             ais = new AudioInputStream(bais, af, audioData.length / af.getFrameSize());
             //以当前的时间命名录音的名字
-            String filePath = downloadPath + "/record/" + new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            String filePath = config.getBasePath() + config.getRecordPath() + new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             File path = new File(filePath);
             if (!path.exists()) {//如果文件不存在，则创建该目录
                 path.mkdirs();
