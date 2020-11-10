@@ -146,20 +146,24 @@ public class FileService {
         return BeautifulStringUtils.message("设置下载路劲成功！");
     }
 
-    public File getFile(String filename) throws IOException {
+    public File getFile(String filename, boolean checkExists) throws IOException {
         File baseFile = getBaseFile();
         String path = baseFile.getAbsolutePath();
         if (filename != null && !filename.isEmpty()) {
             path += filename;
         }
         File file = new File(path.replaceAll("/+", "/").replaceAll("\\+", "/"));
-        if (!file.exists()) {
+        if (checkExists && !file.exists()) {
             return null;
         }
         if (!file.getCanonicalPath().startsWith(baseFile.getCanonicalPath())) {
             return null;
         }
         return file;
+    }
+
+    public File getFile(String filename) throws IOException {
+        return getFile(filename, true);
     }
 
     private File getBaseFile() throws FileNotFoundException {
@@ -233,7 +237,7 @@ public class FileService {
             if (file.isEmpty()) {
                 return BeautifulStringUtils.message("没有选择文件，上传失败！", BeautifulStringUtils.BACK);
             } else {
-                File dest = getFile(path + fileName);// new File(uploadPath + "/upload/" + fileName);
+                File dest = getFile(path + fileName, false);// new File(uploadPath + "/upload/" + fileName);
                 if (!dest.getParentFile().exists()) { //判断文件父目录是否存在
                     dest.getParentFile().mkdir();
                 }

@@ -35,6 +35,7 @@ public class SecurityFilter implements Filter {
         public SecurityHttpServletRequestWrapper(HttpServletRequest request) {
             super(request);
             regRep.put("'([^']*)'", "‘$1’");
+            regRep.put("'([^ ]* )", "‘$1");
             regRep.put("`([^`]*)`", "~$1~");
             regRep.put("(\\.\\.[\\\\/]+)+", "");
             regRep.put("'(.*--+)", "‘$1");
