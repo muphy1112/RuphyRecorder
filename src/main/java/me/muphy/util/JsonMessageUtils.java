@@ -2,7 +2,7 @@ package me.muphy.util;
 
 import me.muphy.entity.ResultEntity;
 
-public class JsonMessageUtils {
+public final class JsonMessageUtils {
 
     public static ResultEntity error(String msg) {
         return entity(msg, -1);

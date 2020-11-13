@@ -66,14 +66,14 @@ public class FileService {
             entity.setMsize((file.length() / 1024 / 1024) + "MB");
             entity.setFileName("<a href='#' style='margin-left: 10px;' onclick=\"showMessage('/file/vf?f=" + queryParameter + "')\">" + fileName + "</a>");
             entity.setOperate("<a href='/file/dl?f=" + queryParameter + "'>下载</a>"
-                    + "<a style='margin-left: 10px;' onclick=\"showMessage('/file/unzip?f=" + queryParameter + "', true)\" href='#'>解压</a>"
-                    + "<a style='margin-left: 10px;' onclick=\"showMessage('/file/lf?d=" + queryParameter + "', true)\" href='#' >删除</a>"
+                    + "<a style='margin-left: 10px;' onclick=\"showMessage('/file/unzip?f=" + queryParameter + "')\" href='#'>解压</a>"
+                    + "<a style='margin-left: 10px;' onclick=\"showMessage('/file/lf?d=" + queryParameter + "')\" href='#' >删除</a>"
                     + "<a href='#' style='margin-left: 10px;' onclick=\"showMessage('/file/vf?f=" + queryParameter + "')\">查看</a>");
         } else {
             entity.setType("目录");
             entity.setFileName("<a onclick=\"listFiles('/file/lf?d=" + queryParameter + "')\" href='#'>" + fileName + "</a>");
             entity.setOperate("<a onclick=\"listFiles('/file/lf?d=" + queryParameter + "')\" href='#'>查看</a>"
-                    + "<a style='margin-left: 10px;' onclick=\"showMessage('/file/zip?f=" + queryParameter + "', true)\" href='#'>压缩</a>");
+                    + "<a style='margin-left: 10px;' onclick=\"showMessage('/file/zip?f=" + queryParameter + "')\" href='#'>压缩</a>");
         }
 
         return entity;

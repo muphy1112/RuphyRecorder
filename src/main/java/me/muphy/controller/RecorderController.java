@@ -16,6 +16,7 @@ public class RecorderController {
     @Autowired
     private RecordService recordService;
 
+    @RolesAllowed({"ADMIN"})
     @RequestMapping("/start")
     public ResultEntity startRecord(int time) {
         return recordService.start(time);

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -39,6 +40,7 @@ public class FileController {
         return fileService.listFiles(d);
     }
 
+    @RolesAllowed({"ADMIN"})
     @GetMapping("/df")
     public String delFile(String p, String f) throws IOException {
         return fileService.delFile(p, f);
@@ -58,17 +60,20 @@ public class FileController {
     /**
      * 实现多文件上传
      */
+    @RolesAllowed({"ADMIN"})
     @PostMapping(value = "/ul")
     public String multiFileUpload(HttpServletRequest request) throws IOException {
         List<MultipartFile> files = ((MultipartHttpServletRequest) request).getFiles("fileName");
         return fileService.multiFileUpload(files);
     }
 
+    @RolesAllowed({"ADMIN"})
     @RequestMapping("/zip")
     public String zip(String d) throws IOException {
         return fileService.zip(d);
     }
 
+    @RolesAllowed({"ADMIN"})
     @RequestMapping("/unzip")
     public String unZip(String f) throws IOException {
         return fileService.unZip(f);

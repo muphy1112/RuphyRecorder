@@ -18,7 +18,7 @@
 <div style="overflow: auto;" id="table"></div>
 
 <div><span id="filename"></span></div>
-<div id="content" style="overflow:auto;min-height: 100px; background-color: #f0f8ff">
+<div id="content" style="overflow:auto;min-height: 500px; background-color: #f0f8ff">
 
 </div>
 <iframe src="/ruphy.html" frameborder="0" style="width: 100%;height: 85px"></iframe>
@@ -49,7 +49,8 @@
             _.util.table.create(table, data, head);
             let freeHeight = screen.availHeight - top.document.body.clientHeight;
             let content = document.getElementById('content');
-            content.style.height = (content.clientHeight + freeHeight - 155) + 'px';
+            let height = content.clientHeight + freeHeight - 155;
+            content.style.height = (height < 500 ? 500 : height) + 'px';
         });
         let current = document.getElementById('current');
         current.innerHTML = '';

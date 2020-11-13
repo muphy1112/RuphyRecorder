@@ -1,5 +1,6 @@
 package me.muphy.config;
 
+import me.muphy.handler.AuthLimitHandler;
 import me.muphy.handler.LoginFailureHandler;
 import me.muphy.handler.LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,23 +14,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(jsr250Enabled = true, prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder())
-                .withUser("azi").password(new BCryptPasswordEncoder().encode("...")).roles("user").and()
-                .withUser("ruphy").password(new BCryptPasswordEncoder().encode("...")).roles("admin");
+                .withUser("azi").password(new BCryptPasswordEncoder().encode("...")).roles("USER").and()
+                .withUser("ruphy").password(new BCryptPasswordEncoder().encode("...")).roles("ADMIN");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/payload/**").permitAll()
-                .anyRequest().fullyAuthenticated();
+                .antMatchers("/payload/**", "/memorandum/**").permitAll()
+                .anyRequest().permitAll();
+//                .anyRequest().fullyAuthenticated();
         http.formLogin().defaultSuccessUrl("/")
                 .successHandler(new LoginSuccessHandler())
                 .failureHandler(new LoginFailureHandler()).permitAll();
+        http.exceptionHandling().accessDeniedHandler(new AuthLimitHandler());
         http.logout().permitAll();
         http.headers().frameOptions().sameOrigin();
         http.csrf().disable();

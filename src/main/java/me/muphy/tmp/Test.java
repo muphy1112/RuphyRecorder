@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,11 @@ public class Test {
     }
 
     public void CongigTest(){
-        ApplicationConfig config = new ApplicationConfig();
+        Date date = new Date();
+        double d = 1.0;
+        int i = 0;
+        long l = 1l;
+        String a = "ddd";
     }
 
 }
