@@ -10,7 +10,10 @@ import java.util.List;
 public interface TableMapper {
 
     @Select("select t.table_name as tableName, t.column_name as columnName, t.data_type as dataType" +
-            " from information_schema.columns t where t.table_name = #{tableName} ")
-    List<ColumnEntity> getTableDescribe(String tableName);
+            " from information_schema.columns t where t.table_schema = #{schema} and t.table_name = #{tableName}")
+    List<ColumnEntity> getTableDescribe(String tableName, String schema);
+
+    @Select("select t.table_name from information_schema.tables t where t.table_schema = #{schema}")
+    List<String> getTablesFromSchema(String schema);
 
 }

@@ -10,8 +10,8 @@ import java.util.*;
 public final class EntityUtils {
 
     private static String defaultPath = ".";
-    private static String db_connect = "jdbc:mysql://47.106.139.21/hacker";
-    private static String db_passwd = "azi123...";
+    private static String db_connect = "jdbc:mysql://localhost:3306/hacker";
+    private static String db_passwd = "***";
     private static String db_user = "azi";
     private static String db_schema;
 
@@ -207,37 +207,6 @@ public final class EntityUtils {
             ls.add(t);
         }
         return ls;
-    }
-
-    class ColumnEntity {
-
-        private String tableName;
-        private String columnName;
-        private String dataType;
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public void setTableName(String tableName) {
-            this.tableName = tableName;
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-
-        public void setColumnName(String columnName) {
-            this.columnName = columnName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
-
-        public void setDataType(String dataType) {
-            this.dataType = dataType;
-        }
     }
 
 }
